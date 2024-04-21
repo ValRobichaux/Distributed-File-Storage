@@ -7,7 +7,8 @@ import (
 	"github.com/valrobichaux/Distributed-File-Storage/p2p"
 )
 
-func OnPeer(p2p.Peer) error {
+func OnPeer(peer p2p.Peer) error {
+	peer.Close()
 	fmt.Println("doing some logic witht he peer outside of TCPTransport")
 	return nil
 }
