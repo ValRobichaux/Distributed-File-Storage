@@ -8,10 +8,14 @@ import (
 
 func TestPathTransformFunc(t *testing.T) {
 	key := "momsbestpicture"
-	pathname := CASPathTransformFunc(key)
+	pathKey := CASPathTransformFunc(key)
 	expectedPathName := "68044/29f74/181a6/3c50c/3d81d/733a1/2f14a/353ff"
-	if pathname != expectedPathName {
-		t.Errorf("have %s want %s", pathname, expectedPathName)
+	expectedOriginalKey := "6804429f74181a63c50c3d81d733a12f14a353ff"
+	if pathKey.PathName != expectedPathName {
+		t.Errorf("have %s want %s", pathKey.PathName, expectedPathName)
+	}
+	if pathKey.Original != expectedPathName {
+		t.Errorf("have %s want %s", pathKey.PathName, expectedOriginalKey)
 	}
 }
 
