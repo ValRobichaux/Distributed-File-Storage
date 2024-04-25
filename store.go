@@ -12,6 +12,19 @@ import (
 	"strings"
 )
 
+type PathKey struct {
+	PathName string
+	Filename string
+}
+
+type StoreOpts struct {
+	PathTransformFunc PathTransformFunc
+}
+
+type Store struct {
+	StoreOpts
+}
+
 func CASPathTransformFunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
 	hashStr := hex.EncodeToString(hash[:])
@@ -46,21 +59,8 @@ func (p PathKey) FullPath() string {
 
 type PathTransformFunc func(string) PathKey
 
-type PathKey struct {
-	PathName string
-	Filename string
-}
-
-type StoreOpts struct {
-	PathTransformFunc PathTransformFunc
-}
-
 var DefaultpathTransformFunc = func(key string) string {
 	return key
-}
-
-type Store struct {
-	StoreOpts
 }
 
 func NewStore(opts StoreOpts) *Store {

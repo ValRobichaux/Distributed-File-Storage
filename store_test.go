@@ -40,6 +40,7 @@ func TestStoreDeletekey(t *testing.T) {
 	s.Delete(key)
 }
 
+// TestStore for testing the entire suite
 func TestStore(t *testing.T) {
 	opts := StoreOpts{
 		PathTransformFunc: CASPathTransformFunc,
