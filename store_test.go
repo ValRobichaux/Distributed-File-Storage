@@ -20,26 +20,6 @@ func TestPathTransformFunc(t *testing.T) {
 	}
 }
 
-func TestStoreDeletekey(t *testing.T) {
-	opts := StoreOpts{
-		PathTransformFunc: CASPathTransformFunc,
-	}
-	s := NewStore(opts)
-	key := "momspecials"
-	data := []byte("some jpg bytes")
-
-	// Write data directly to store
-	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
-		t.Error(err)
-	}
-
-	// Delete the key
-	if err := s.Delete(key); err != nil {
-		t.Error(err)
-	}
-	s.Delete(key)
-}
-
 // TestStore for testing the entire suite
 func TestStore(t *testing.T) {
 	s := newStore()
@@ -67,7 +47,12 @@ func TestStore(t *testing.T) {
 			t.Errorf("want %s have %s", data, b)
 		}
 
-		s.Delete(key)
+		if err := s.Delete(key); err != nil {
+			t.Error(err)
+		}
+		if ok := s.Has(key); ok {
+			t.Errorf("expected to NOT have key %s", key)
+		}
 	}
 }
 
