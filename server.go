@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/gob"
 	"fmt"
 	"io"
@@ -39,12 +40,7 @@ func NewFileServer(opts FileServerOpts) *FileServer {
 	}
 }
 
-type Payload struct {
-	Key  string
-	Data []byte
-}
-
-func (s *FileServer) broadcast(p Payload) error {
+func (s *FileServer) broadcast(p *Payload) error {
 	peers := []io.Writer{}
 
 	for _, peer := range s.peers {
@@ -54,11 +50,35 @@ func (s *FileServer) broadcast(p Payload) error {
 	return gob.NewEncoder(mw).Encode(p)
 }
 
+type Payload struct {
+	Key  string
+	Data []byte
+}
+
 func (s *FileServer) StoreData(key string, r io.Reader) error {
 	//1. Store this file to disk
 	//2. broadcast this file to all known peers in the network
 
-	return nil
+	if err := s.store.Write(key, r); err != nil {
+		return err
+	}
+
+	// the reader is empty
+
+	buf := new(bytes.Buffer)
+	_, err := io.Copy(buf, r)
+	if err != nil {
+		return err
+	}
+
+	p := &Payload{
+		Key:  key,
+		Data: buf.Bytes(),
+	}
+
+	fmt.Println(buf.Bytes())
+
+	return s.broadcast(p)
 }
 
 func (s *FileServer) Stop() {
@@ -83,7 +103,11 @@ func (s *FileServer) loop() {
 	for {
 		select {
 		case msg := <-s.Transport.Consume():
-			fmt.Println(msg)
+			fmt.Println("Recv msg")
+			var p Payload
+			if err := gob.NewDecoder(bytes.NewReader(msg.Payload)).Decode(&p); err != nil {
+				log.Fatal(err)
+			}
 		case <-s.quitch:
 			return
 		}
@@ -96,6 +120,7 @@ func (s *FileServer) bootstrapNetwork() error {
 			continue
 		}
 		go func(addr string) {
+			fmt.Printf("[%s] attemping to connect with remote %s\n", s.Transport.Addr(), addr)
 			if err := s.Transport.Dial(addr); err != nil {
 				log.Println("dial error : ", err)
 			}

@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -132,13 +133,16 @@ func (s *Store) readStream(key string) (io.ReadCloser, error) {
 
 func (s *Store) writeStream(key string, r io.Reader) error {
 	pathKey := s.PathTransformFunc(key)
-	pathNameWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.PathName)
+
+	trimRoot := strings.TrimPrefix(s.Root, ":")
+
+	pathNameWithRoot := filepath.Join(trimRoot, pathKey.PathName)
+
 	if err := os.MkdirAll(pathNameWithRoot, os.ModePerm); err != nil {
 		return err
 	}
 
-	fullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FullPath())
-
+	fullPathWithRoot := filepath.Join(trimRoot, pathKey.FullPath())
 	f, err := os.Create(fullPathWithRoot)
 	if err != nil {
 		return err

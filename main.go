@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"log"
+	"time"
 
 	"github.com/valrobichaux/Distributed-File-Storage/p2p"
 )
@@ -33,8 +34,11 @@ func makeServer(listenAddr string, nodes ...string) *FileServer {
 func main() {
 	s1 := makeServer(":3000", "")
 	s2 := makeServer(":4000", ":3000")
+
 	go func() { log.Fatal(s1.Start()) }()
-	s2.Start()
+
+	go s2.Start()
+	time.Sleep(1 * time.Second)
 
 	data := bytes.NewReader([]byte("My big data filer here!"))
 

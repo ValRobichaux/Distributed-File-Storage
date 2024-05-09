@@ -53,7 +53,10 @@ func (p *TCPPeer) Send(b []byte) error {
 // for reading the incoming messages recieved from another peer in the network
 func (t *TCPTransport) Consume() <-chan RPC {
 	return t.rpcch
+}
 
+func (t *TCPTransport) Addr() string {
+	return t.ListenAddr
 }
 
 // Close implements the Transport interface
@@ -105,10 +108,12 @@ type Temp struct{}
 
 func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 	var err error
+
 	defer func() {
 		fmt.Printf("dropping peer connection: %s", err)
 		conn.Close()
 	}()
+
 	peer := NewTCPPeer(conn, outbound)
 
 	if err := t.HandshakeFunc(peer); err != nil {
@@ -122,8 +127,8 @@ func (t *TCPTransport) handleConn(conn net.Conn, outbound bool) {
 	}
 
 	// Read loop
-	rpc := RPC{}
 	for {
+		rpc := RPC{}
 		err = t.Decoder.Decode(conn, &rpc)
 		if err != nil {
 			return
