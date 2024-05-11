@@ -122,7 +122,7 @@ func (s *Store) Read(key string) (io.Reader, error) {
 	buf := new(bytes.Buffer)
 	_, err = io.Copy(buf, f)
 
-	return buf, nil
+	return buf, err
 }
 
 func (s *Store) readStream(key string) (io.ReadCloser, error) {
