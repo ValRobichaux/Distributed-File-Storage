@@ -1,8 +1,10 @@
 package main
 
 import (
-	"bytes"
+	"fmt"
+	"io"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/valrobichaux/Distributed-File-Storage/p2p"
@@ -18,8 +20,10 @@ func makeServer(listenAddr string, nodes ...string) *FileServer {
 
 	tcpTransport := p2p.NewTCPTransport(TCPTransportOpts)
 
+	storageRoot := strings.TrimPrefix(listenAddr, ":")
+
 	fileServeropts := FileServerOpts{
-		StorageRoot:       listenAddr + "_network",
+		StorageRoot:       storageRoot + "_network",
 		PathTransformFunc: CASPathTransformFunc,
 		Transport:         tcpTransport,
 		BootstrapNodes:    nodes,
@@ -42,8 +46,20 @@ func main() {
 	go s2.Start()
 	time.Sleep(2 * time.Second)
 
-	data := bytes.NewReader([]byte("My big data file here!"))
-	s2.StoreData("myprivatedata", data)
+	// data := bytes.NewReader([]byte("My big data filer here!"))
+	// s2.Store("myprivatedata", data)
+
+	r, err := s2.Get("myprivatedata")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	b, err := io.ReadAll(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(b))
 
 	select {}
 }
