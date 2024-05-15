@@ -1,0 +1,6 @@
+# Ignore directories named "3000_network" and "4000_network"
+3000_network/
+4000_network/
+
+# Ignore directories or files ending with "_network"
+*_network/
